@@ -1,0 +1,8 @@
+FROM object-manager_env
+
+COPY api/ /code/api/
+COPY uwsgi.ini /code/
+
+WORKDIR /code
+CMD [ "uwsgi", "uwsgi.ini" ]
+EXPOSE 5000

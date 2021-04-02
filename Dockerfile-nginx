@@ -1,0 +1,11 @@
+FROM object-manager_env as static
+
+COPY src/ /code/src/
+COPY public/ /code/public/
+RUN cd /code && yarn build
+
+
+FROM nginx:1.19.9
+
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=static /code/build /code/build

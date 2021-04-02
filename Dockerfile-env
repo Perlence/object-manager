@@ -1,0 +1,24 @@
+FROM python:3.9.2-slim-buster
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && cd /tmp \
+    && curl -L https://nodejs.org/dist/v15.12.0/node-v15.12.0-linux-x64.tar.gz | tar xz \
+    && cp -r /tmp/node-v15.12.0-linux-x64/bin/* /usr/local/bin \
+    && cp -r /tmp/node-v15.12.0-linux-x64/include/* /usr/local/include \
+    && cp -r /tmp/node-v15.12.0-linux-x64/lib/* /usr/local/lib \
+    && cp -r /tmp/node-v15.12.0-linux-x64/share/* /usr/local/share \
+    && rm -r /tmp/node-v15.12.0-linux-x64
+
+RUN npm install -g yarn
+
+COPY package.json /code/
+COPY yarn.lock /code/
+RUN cd /code && yarn install
+
+COPY requirements.txt /code/
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends gcc libc6-dev \
+    && pip install -r /code/requirements.txt
+
+WORKDIR /code
