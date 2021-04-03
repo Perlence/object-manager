@@ -8,7 +8,7 @@ mgr = ObjectManager3()
 
 @app.route('/objects', methods=['POST'])
 def put_object():
-    """Return the object into the pool.
+    """Add the object to the pool.
 
     POST /objects
     In:  {"object": 42, "acquired": false}
