@@ -8,7 +8,7 @@ Object Manager exercise.
 
 ## Design
 
-The Object Manages manages objects which are positive nonzero integers. For the
+The Object Manager manages objects which are positive nonzero integers. For the
 end user, the object can be in one of two states:
 
 ```
