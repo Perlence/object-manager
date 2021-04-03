@@ -1,6 +1,6 @@
 import React from 'react';
 
-function ObjectManagerList({ objects }) {
+function ObjectManagerList({ objects, freeObject }) {
   const available = [];
   const acquired = [];
   objects.forEach(obj => {
@@ -16,13 +16,23 @@ function ObjectManagerList({ objects }) {
       <div className="ObjectManagerList-available">
         Available objects:
         <ul>
-          {available.map(obj => <li>{obj.object}</li>)}
+          {available.map(obj => <li key={obj.object}>{obj.object}</li>)}
         </ul>
       </div>
       <div className="ObjectManagerList-acquired">
         Acquired objects:
         <ul>
-          {acquired.map(obj => <li>{obj.object}</li>)}
+          {acquired.map(obj =>
+            <li key={obj.object}>
+              {obj.object}{' '}
+              <button
+                data-object={obj.object}
+                onClick={() => freeObject(obj.object)}
+              >
+                Free
+              </button>
+            </li>
+          )}
         </ul>
       </div>
     </div>

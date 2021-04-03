@@ -1,5 +1,6 @@
 import subprocess
 import threading
+from time import sleep
 
 import pytest
 from selenium import webdriver
@@ -25,10 +26,9 @@ def test_get_free(browser: webdriver.Remote, react_server):
     ]
     get_available_items = lambda: get_texts('.ObjectManagerList-available li')
     get_acquired_items = lambda: get_texts('.ObjectManagerList-acquired li')
-    get_btn = clickable(br, '#get input[type=submit]')
-    free_input = visible(br, '#free input[type=text]')
+    get_btn = lambda: clickable(br, '#get input[type=submit]')
 
-    get_btn.click()
+    get_btn().click()
     assert visible(br, '#get div').text == 'Error: the pool is empty'
 
     assert get_available_items() == []
@@ -36,30 +36,27 @@ def test_get_free(browser: webdriver.Remote, react_server):
 
     app.mgr.put_object(1)
 
-    free_input.send_keys('1' + Keys.ENTER)
-    assert visible(br, '#free div').text == 'Freed object 1'
-
+    br.refresh()
     assert get_available_items() == ['1']
     assert get_acquired_items() == []
 
-    get_btn.click()
+    get_btn().click()
     assert visible(br, '#get div').text == 'Got object 1'
 
     assert get_available_items() == []
-    assert get_acquired_items() == ['1']
+    assert get_acquired_items() == ['1 Free']
 
-    get_btn.click()
+    get_btn().click()
     assert visible(br, '#get div').text == 'Error: all objects are acquired'
 
-    free_input.send_keys(Keys.ENTER)
-    assert visible(br, '#free div').text == 'Freed object 1'
-
+    clickable(br, 'button[data-object="1"]').click()
+    sleep(0.1)
     assert get_available_items() == ['1']
     assert get_acquired_items() == []
 
     app.mgr.drop_object(1)
 
-    get_btn.click()
+    get_btn().click()
     assert visible(br, '#get div').text == 'Error: the pool is empty'
 
     assert get_available_items() == []
