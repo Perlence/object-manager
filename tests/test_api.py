@@ -20,11 +20,19 @@ def test_free_validation(client: FlaskClient):
 def test_put_get_free_drop(client: FlaskClient, restore_manager):
     app.mgr = ObjectManager3()
 
+    resp = client.get('/objects')
+    assert resp.json == []
+    assert resp.status_code == 200
+
     resp = client.post('/objects/get')
     assert resp.json == {'error': 'the pool is empty'}
     assert resp.status_code == 409
 
     app.mgr.put_object(1)
+
+    resp = client.get('/objects')
+    assert resp.json == [{'object': 1, 'acquired': False}]
+    assert resp.status_code == 200
 
     resp = client.post('/objects/1', json={})
     assert resp.status_code == 400
@@ -40,6 +48,10 @@ def test_put_get_free_drop(client: FlaskClient, restore_manager):
     assert resp.json == {'object': 1, 'acquired': True}
     assert resp.status_code == 200
 
+    resp = client.get('/objects')
+    assert resp.json == [{'object': 1, 'acquired': True}]
+    assert resp.status_code == 200
+
     resp = client.post('/objects/get')
     assert resp.json == {'error': 'all objects are acquired'}
     assert resp.status_code == 409
@@ -48,8 +60,16 @@ def test_put_get_free_drop(client: FlaskClient, restore_manager):
     assert resp.json == {'object': 1, 'acquired': False}
     assert resp.status_code == 200
 
+    resp = client.get('/objects')
+    assert resp.json == [{'object': 1, 'acquired': False}]
+    assert resp.status_code == 200
+
     app.mgr.drop_object(1)
 
     resp = client.post('/objects/get')
     assert resp.json == {'error': 'the pool is empty'}
     assert resp.status_code == 409
+
+    resp = client.get('/objects')
+    assert resp.json == []
+    assert resp.status_code == 200

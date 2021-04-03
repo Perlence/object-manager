@@ -1,3 +1,13 @@
+async function listObjects() {
+  const resp = await window.fetch('/objects', { method: 'GET' });
+
+  if (!resp.ok) {
+    return responseError(await resp.text());
+  }
+
+  return await resp.json();
+}
+
 async function getObject() {
   const resp = await window.fetch('/objects/get', { method: 'POST' });
 
@@ -35,6 +45,7 @@ function responseError(respText) {
 }
 
 export {
+  listObjects,
   getObject,
   freeObject,
 };

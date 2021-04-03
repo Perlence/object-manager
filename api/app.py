@@ -1,12 +1,31 @@
-from flask import Flask, request
+from flask import Flask, jsonify, request
 
 from .object_manager import Conflict, ObjectManager3
 
 app = Flask(__name__)
 
 mgr = ObjectManager3()
-for i in range(1, 8):
+for i in range(1, 6):
     mgr.put_object(i)
+
+
+@app.route('/objects', methods=['GET'])
+def list_objects():
+    """Get all object from the pool.
+
+    POST /objects/get
+    In:  N/A
+    Out: {"object": 42, "acquired": true}
+    Not idempotent
+    """
+    available, acquired = mgr.list_objects()
+    return (
+        jsonify(
+            [{'object': obj, 'acquired': False} for obj in available] +
+            [{'object': obj, 'acquired': True} for obj in acquired],
+        ),
+        200
+    )
 
 
 @app.route('/objects/get', methods=['POST'])

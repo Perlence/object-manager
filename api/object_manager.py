@@ -8,6 +8,10 @@ class ObjectManager3:
         self._pool = deque()
         self._acquired = deque()
 
+    def list_objects(self):
+        with self._lock:
+            return tuple(self._pool), tuple(self._acquired)
+
     def put_object(self, obj: int, acquire=False):
         self._validate(obj)
         with self._lock:
