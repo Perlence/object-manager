@@ -70,13 +70,6 @@ def api_server(restore_manager):
 
 
 @pytest.fixture
-def restore_manager():
-    orig_mgr = app.mgr
-    yield
-    app.mgr = orig_mgr
-
-
-@pytest.fixture
 def browser():
     options = webdriver.ChromeOptions()
     options.add_argument('--start-maximized')

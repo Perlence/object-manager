@@ -11,13 +11,6 @@ def client():
         yield client
 
 
-@pytest.fixture
-def restore_manager():
-    orig_mgr = app.mgr
-    yield
-    app.mgr = orig_mgr
-
-
 def test_free_validation(client: FlaskClient):
     resp = client.post('/objects/0', json={'acquired': False})
     assert resp.status_code == 400
