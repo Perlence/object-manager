@@ -9,28 +9,23 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from werkzeug.serving import make_server
 
-from api.app import app
+from api import app
+from api.object_manager import ObjectManager3
 
 
-def test_put_get_free_drop(browser: webdriver.Remote, react_server):
+def test_get_free(browser: webdriver.Remote, react_server):
+    app.mgr = ObjectManager3()
+
     br = browser
     br.get('http://env:3000/')
 
-    put_input = visible(br, '#put input[type=text]')
     get_btn = clickable(br, '#get input[type=submit]')
     free_input = visible(br, '#free input[type=text]')
-    drop_input = visible(br, '#drop input[type=text]')
 
     get_btn.click()
     assert visible(br, '#get div').text == 'Error: the pool is empty'
 
-    drop_input.send_keys('1' + Keys.ENTER)
-    assert visible(br, '#drop div').text == "There's no object 1 in the pool"
-
-    put_input.send_keys('1' + Keys.ENTER)
-    assert visible(br, '#put div').text == 'Put 1 into the pool'
-    put_input.send_keys(Keys.ENTER)
-    assert visible(br, '#put div').text == 'Object 1 is already in the pool'
+    app.mgr.put_object(1)
 
     free_input.send_keys('1' + Keys.ENTER)
     assert visible(br, '#free div').text == 'Freed object 1'
@@ -41,14 +36,10 @@ def test_put_get_free_drop(browser: webdriver.Remote, react_server):
     get_btn.click()
     assert visible(br, '#get div').text == 'Error: all objects are acquired'
 
-    drop_input.send_keys(Keys.ENTER)
-    assert visible(br, '#drop div').text == 'Error: cannot drop an acquired object'
-
     free_input.send_keys(Keys.ENTER)
     assert visible(br, '#free div').text == 'Freed object 1'
 
-    drop_input.send_keys(Keys.ENTER)
-    assert visible(br, '#drop div').text == 'Removed object 1 from the pool'
+    app.mgr.drop_object(1)
 
     get_btn.click()
     assert visible(br, '#get div').text == 'Error: the pool is empty'
@@ -69,13 +60,20 @@ def react_server(api_server):
 
 
 @pytest.fixture
-def api_server():
-    server = make_server('127.0.0.1', 5000, app, threaded=True)
+def api_server(restore_manager):
+    server = make_server('127.0.0.1', 5000, app.app, threaded=True)
     th = threading.Thread(target=server.serve_forever, daemon=True)
     th.start()
     yield
     server.shutdown()
     th.join()
+
+
+@pytest.fixture
+def restore_manager():
+    orig_mgr = app.mgr
+    yield
+    app.mgr = orig_mgr
 
 
 @pytest.fixture
@@ -85,7 +83,7 @@ def browser():
     options.add_argument('--disable-gpu')
     options.add_argument('--disable-dev-shm-usage')
     remote = webdriver.Remote(
-        command_executor=f'http://selenium:4444/wd/hub',
+        command_executor='http://selenium:4444/wd/hub',
         desired_capabilities=webdriver.DesiredCapabilities.CHROME.copy(),
         options=options,
     )

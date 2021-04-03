@@ -1,22 +1,3 @@
-async function putObject(value, acquire = false) {
-  const resp = await window.fetch(
-    '/objects',
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ object: Number(value), acquired: acquire }),
-    },
-  );
-
-  if (!resp.ok) {
-    return responseError(await resp.text());
-  } else if (resp.status === 201) {
-    return `Put ${value} into the pool`;
-  } else if (resp.status === 200) {
-    return `Object ${value} is already in the pool`;
-  }
-}
-
 async function getObject() {
   const resp = await window.fetch('/objects/get', { method: 'POST' });
 
@@ -43,17 +24,6 @@ async function freeObject(value) {
   return `Freed object ${value}`;
 }
 
-async function dropObject(value) {
-  const resp = await window.fetch(`/objects/${value}`, { method: 'DELETE' });
-  if (resp.status === 404) {
-    return `There's no object ${value} in the pool`;
-  } else if (!resp.ok) {
-    return responseError(await resp.text());
-  } else {
-    return `Removed object ${value} from the pool`;
-  }
-}
-
 function responseError(respText) {
   let errorObj;
   try {
@@ -65,8 +35,6 @@ function responseError(respText) {
 }
 
 export {
-  putObject,
   getObject,
   freeObject,
-  dropObject,
 };
